@@ -1,50 +1,42 @@
-/*******************************************************************************
+/*
+=============================================================
+Create Database and Schemas
+=============================================================
 Script Purpose:
-    This script initializes the Data Warehouse environment using the Medallion 
-    Architecture (Bronze, Silver, Gold). It handles the cleanup of existing 
-    databases to ensure a clean state for deployment.
-
+    This script creates a new database named 'DataWarehouse' after checking if it already exists. 
+    If the database exists, it is dropped and recreated. Additionally, the script sets up three schemas 
+    within the database: 'bronze', 'silver', and 'gold'.
+	
 WARNING:
-    Running this script will PERMANENTLY DELETE the existing 'DataWarehouse' 
-    database and all data contained within it. Ensure you have backups if 
-    running this in a production-adjacent environment.
-*******************************************************************************/
+    Running this script will drop the entire 'DataWarehouse' database if it exists. 
+    All data in the database will be permanently deleted. Proceed with caution 
+    and ensure you have proper backups before running this script.
+*/
 
 USE master;
 GO
 
--- 1. Check if the database exists and drop it
-IF EXISTS (SELECT name FROM sys.databases WHERE name = N'DataWarehouse')
+-- Drop and recreate the 'DataWarehouse' database
+IF EXISTS (SELECT 1 FROM sys.databases WHERE name = 'DataWarehouse')
 BEGIN
-    PRINT 'Existing DataWarehouse found. Terminating connections...';
-    
-    -- Set to SINGLE_USER to kick out other users and rollback their transactions
     ALTER DATABASE DataWarehouse SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    
-    -- Drop the database
     DROP DATABASE DataWarehouse;
-    PRINT 'Database dropped successfully.';
-END
+END;
 GO
 
--- 2. Create the fresh database
+-- Create the 'DataWarehouse' database
 CREATE DATABASE DataWarehouse;
 GO
 
 USE DataWarehouse;
 GO
 
--- 3. Create the Medallion Schemas
--- Bronze: Raw data landing zone
+-- Create Schemas
 CREATE SCHEMA bronze;
 GO
 
--- Silver: Validated and enriched data
 CREATE SCHEMA silver;
 GO
 
--- Gold: Business-level aggregates and reporting views
 CREATE SCHEMA gold;
 GO
-
-PRINT 'DataWarehouse environment created with Bronze, Silver, and Gold schemas.';
